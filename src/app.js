@@ -1,27 +1,36 @@
 const express = require("express");
-const { adminAuth, userAuth } = require("./Middleware/auth");
+const connectDB = require("./config/db");
+require("dotenv").config()
 
 const app = express();
+const User = require("./models/user")
 
-app.use("/admin", adminAuth)
+app.post("/signup", async (req, res) =>{
+  //creating a new instance of the User Model
+  const user = new User({
+    firstName: "Tushar",
+    lastName: "Sahu",
+    email: "sahutushar532@gmail.com",
+    password: "12345678",
+    age: 24,
+    gender: "Male"
+  })
 
-app.post("/user/login", (req, res)=>{
-
+  try{
+    await user.save();
+    res.send("user saved to database sucessfully!")
+  }catch(err){
+    res.status(400).send("Error saving user data: " + err.message)
+  }
 })
 
-app.get("/user", userAuth, (req, res)=>{
-  console.log("user is loggedIn")
-  res.send("le lo user ka data")
-})
-
-app.get("/admin/getAllData", (req,res)=>{
-  res.send("All data sent")
-})
-
-app.get("/admin/deleteUser", (req, res)=>{
-  res.send("Deleted a user")
-})
-
-app.listen(7777, () => {
-  console.log("Server is listening on port 7777...");
-});
+connectDB()
+  .then(() => {
+    console.log("Database connection established...");
+    app.listen(7777, () => {
+      console.log("Server is listening on port 7777...");
+    });
+  })
+  .catch((err) => {
+    console.error("Database cannot be connected!!");
+  });
