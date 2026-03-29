@@ -18,63 +18,79 @@ app.post("/signup", async (req, res) => {
     res.status(400).send("Error saving user data: " + err.message);
   }
 });
-//find user by email
-app.get("/user", async (req, res) =>{
-  const userEmail = req.body.email;
 
-  try{
-    const users = await User.find({email: userEmail});
-  if(users.length === 0){
-    res.status(404).send("User not found")
+//find user by email
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.email;
+  try {
+    const users = await User.find({ email: userEmail });
+    if (users.length === 0) {
+      res.status(404).send("User not found");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.send("Something went wrong: " + err.message);
   }
-  else{
-    res.send(users)
-  }
-  }catch(err){
-    res.send("Something went wrong: " + err.message)
-  }
-})
+});
 
 //Feed API - GET /feed - get all the users from the database
-app.get("/feed", async (req, res) =>{
-  try{
+app.get("/feed", async (req, res) => {
+  try {
     const users = await User.find();
-  if(users.length === 0){
-    res.status(404).send("User not found")
+    if (users.length === 0) {
+      res.status(404).send("Users not found");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
   }
-  else{
-    res.send(users)
-  }
-  }catch(err){
-    res.send("Something went wrong: " + err.message)
-  }
-
-})
+});
 
 //Delete a user from the database
-app.delete("/user", async (req, res) =>{
+app.delete("/user", async (req, res) => {
   const userId = req.body.userId;
-  try{
+  try {
     await User.findByIdAndDelete(userId);
-    res.send("User deleted sucessfully")
-  }catch(err){
-    res.send("Something went wrong: " + err.message)
+    res.send("User deleted sucessfully");
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
   }
-})
+});
 
-//update a user in the database
-app.patch("/user", async (req, res) =>{
-  const userId = req.body.userId;
+//update a user's data in the database
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
   const data = req.body;
-
-  try{
-  await User.findByIdAndUpdate({_id: userId}, data);
-  res.send("User updated sucessfully")
-  }catch(err){
-    res.send("Something went wrong: " + err.message)
+  try {
+    const AlLOWED_UPDATES = [
+      "userId",
+      "firstName",
+      "lastName",
+      "password",
+      "age",
+      "gender",
+      "photoUrl",
+      "about",
+      "skills",
+    ];
+    const isAllowedUpdate = Object.keys(data).every((k) =>
+      AlLOWED_UPDATES.includes(k),
+    );
+    if (!isAllowedUpdate) {
+      throw new Error("Invalid update fields provided");
+    }
+    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+      returnDocument: "before",
+      runValidators: true,
+    });
+    console.log(user);
+    res.send("User updated sucessfully");
+  } catch (err) {
+    res.status(400).send("update failed : " + err.message);
   }
-})
-
+});
 
 connectDB()
   .then(() => {
