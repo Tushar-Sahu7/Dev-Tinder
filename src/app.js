@@ -34,6 +34,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+//Login a user
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -55,21 +56,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-//find user by email
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.email;
-  try {
-    const users = await User.find({ email: userEmail });
-    if (users.length === 0) {
-      res.status(404).send("User not found");
-    } else {
-      res.send(users);
-    }
-  } catch (err) {
-    res.send("Something went wrong: " + err.message);
-  }
-});
-
 //GET /profile of the loggedIn user
 app.get("/profile", userAuth, async (req, res) => {
   try {
@@ -80,63 +66,15 @@ app.get("/profile", userAuth, async (req, res) => {
   }
 });
 
-//Feed API - GET /feed - get all the users from the database
-app.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find();
-    if (users.length === 0) {
-      res.status(404).send("Users not found");
-    } else {
-      res.send(users);
-    }
+app.post("/sendConnectionRequest", userAuth, async ( req, res ) => {
+  try{
+    const user = req.user;
+    res.send(user.firstName + " sending connection request...");
   } catch (err) {
-    res.status(400).send("Something went wrong: " + err.message);
+    res.status(400).send("ERROR:  " + err.message);
   }
-});
 
-//Delete a user from the database
-app.delete("/user", async (req, res) => {
-  const userId = req.body.userId;
-  try {
-    await User.findByIdAndDelete(userId);
-    res.send("User deleted sucessfully");
-  } catch (err) {
-    res.status(400).send("Something went wrong: " + err.message);
-  }
-});
-
-//update a user's data in the database
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
-  try {
-    const AlLOWED_UPDATES = [
-      "userId",
-      "firstName",
-      "lastName",
-      "password",
-      "age",
-      "gender",
-      "photoUrl",
-      "about",
-      "skills",
-    ];
-    const isAllowedUpdate = Object.keys(data).every((k) =>
-      AlLOWED_UPDATES.includes(k),
-    );
-    if (!isAllowedUpdate) {
-      throw new Error("Invalid update fields provided");
-    }
-    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
-      returnDocument: "before",
-      runValidators: true,
-    });
-    console.log(user);
-    res.send("User updated sucessfully");
-  } catch (err) {
-    res.status(400).send("update failed : " + err.message);
-  }
-});
+})
 
 connectDB()
   .then(() => {
