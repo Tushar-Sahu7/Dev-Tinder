@@ -2,6 +2,7 @@ const express = require("express");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const { userAuth } = require("../middlewares/auth");
+const { validateEditProfileData } = require("../utils/validate");
 
 const profileRouter = express.Router();
 
@@ -18,18 +19,8 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
 //PATCH /profile/edit of the loggedIn user
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
   try {
-    const ALLOWED_UPDATES = [
-      "firstName",
-      "lastName",
-      "age",
-      "gender",
-      "about",
-      "skills",
-    ];
-    const isProfileFieldEditAllowed = Object.keys(req.body).every((key) =>
-      ALLOWED_UPDATES.includes(key),
-    );
-    if (!isProfileFieldEditAllowed) {
+    
+    if (!validateEditProfileData(req)) {
       throw new Error("Invalid profile edit request!");
     }
     const loggedInUser = req.user;
