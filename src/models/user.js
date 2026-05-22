@@ -41,10 +41,9 @@ const userSchema = new mongoose.Schema(
 
     gender: {
       type: String,
-      validate(value) {
-        if (!["male", "female", "other"].includes(value)) {
-          throw new Error("Gender value is not valid.");
-        }
+      enum: {
+        values: ["male", "female", "other"],
+        message: `{VALUE} is incorrect gender type`,
       },
       lowercase: true,
     },
@@ -83,6 +82,7 @@ userSchema.methods.validatePassword = async function (password) {
   const passwordHash = user.password;
   const isPasswordValid = await bcrypt.compare(password, passwordHash);
   return isPasswordValid;
-}
+};
 
-module.exports = mongoose.model("user", userSchema);
+const UserModel = new mongoose.model("User", userSchema);
+module.exports = UserModel;

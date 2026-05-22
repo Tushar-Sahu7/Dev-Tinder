@@ -1,15 +1,12 @@
-const express = require("express")
-const { userAuth } = require("../middlewares/auth")
+const express = require("express");
+const { userAuth } = require("../middlewares/auth");
 
 const requestRouter = express.Router();
 
-requestRouter.post("/sendConnectionRequest", userAuth, async (req, res) => {
-  try {
-    const user = req.user;
-    res.send(user.firstName + " sending connection request...");
-  } catch (err) {
-    res.status(400).send("ERROR:  " + err.message);
-  }
-});
+requestRouter.post(
+  "/request/send/interested/:toUserId",
+  userAuth,
+  async (req, res) => {},
+);
 
 module.exports = requestRouter;
