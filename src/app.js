@@ -8,6 +8,7 @@ const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 
 require("dotenv").config();
+require("node:dns/promises").setServers(["1.1.1.1", "8.8.8.8"]);
 
 const app = express();
 app.use(express.json());
